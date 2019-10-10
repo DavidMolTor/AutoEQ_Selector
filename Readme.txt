@@ -1,5 +1,5 @@
 //----------------
-// AUTOEQ_SELECTOR
+// AUTOEQ SELECTOR
 //----------------
 
 Simple tool for importing AutoEQ settings into EqualizerAPO.
