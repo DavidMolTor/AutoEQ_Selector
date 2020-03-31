@@ -37,17 +37,15 @@ namespace AutoEQ_Selector
         //Common line storage
         private string sLine = "";
 
+        //AutoEQ folder and configuration path
+        private string sPathAutoEQ = "";
+        private string sConfigFile = "";
+
         //Raw results directories
         private List<string> listResultsFiles;
 
-        //Raw configuration directories
-        private List<string> listConfigFiles;
-
         //Headphone models list
         private List<string> listModels = new List<string>();
-
-        //Configured models list
-        private List<string> listConfig = new List<string>();
 
         /*
         Main window loaded event
@@ -62,7 +60,7 @@ namespace AutoEQ_Selector
             Configuration config = ConfigurationManager.OpenMappedExeConfiguration(configMap, ConfigurationUserLevel.None);
 
             //Get the AutoEQ stored path
-            string sPathAutoEQ = config.AppSettings.Settings["AutoEQ_Folder"].Value;
+            sPathAutoEQ = config.AppSettings.Settings["AutoEQ_Folder"].Value;
 
             //Check the AutoEQ folder path
             if (string.IsNullOrEmpty(sPathAutoEQ) || !Directory.Exists(sPathAutoEQ))
@@ -82,7 +80,7 @@ namespace AutoEQ_Selector
             }
 
             //Get the EqualizerAPO system path
-            string sPathEqualizerAPO = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + "\\EqualizerAPO\\config";
+            string sPathEqualizerAPO = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "EqualizerAPO");
 
             //Check the EqualizerAPO folder path
             if (string.IsNullOrEmpty(sPathEqualizerAPO) || !Directory.Exists(sPathEqualizerAPO))
@@ -100,11 +98,13 @@ namespace AutoEQ_Selector
                     dialog.ShowDialog();
 
                     //Save the EqualizerAPO folder
-                    sPathEqualizerAPO = dialog.SelectedPath + "\\config";
-                    Properties.Settings.Default["EqualizerAPO_Folder"] = dialog.SelectedPath + "\\config";
+                    Properties.Settings.Default["EqualizerAPO_Folder"] = dialog.SelectedPath;
                     config.Save();
                 }
             }
+
+            //Set the configuration file path
+            sConfigFile = Path.Combine(sPathEqualizerAPO, "config", "config.txt");
 
             //Get the headphone models
             iCount = 0;
@@ -135,30 +135,10 @@ namespace AutoEQ_Selector
             //Sort the model list alphabetically
             listModels.Sort();
 
-            //Get the saved configurations
-            listConfigFiles = new List<string>(Directory.GetFiles(sPathEqualizerAPO, "*.txt", SearchOption.AllDirectories));
-            for (int i = 0; i < listConfigFiles.Count; i++)
-            {
-                //Get the current configuration
-                string[] sParts = listConfigFiles[i].Split('\\');
-
-                //Add the configuration to the list
-                listConfig.Add(sParts[sParts.Length - 1].Replace(".txt", ""));
-            }
-
-            //Sort the configuration list alphabetically
-            listConfig.Sort();
-
             //Add the models to the list box
             for (int i = 0; i < listModels.Count; i++)
             {
                 listBoxModels.Items.Add(listModels[i]);
-            }
-
-            //Add the configurations to the list box
-            for (int i = 0; i < listConfig.Count; i++)
-            {
-                listBoxConfig.Items.Add(listConfig[i]);
             }
 
             //Show the main application
@@ -220,7 +200,7 @@ namespace AutoEQ_Selector
         private void ButtonApply_Click(object sender, RoutedEventArgs e)
         {
             //Check if there is a saleected model and test
-            if (listBoxModels.SelectedIndex != -1 && listBoxTests.SelectedIndex != -1 && listBoxConfig.SelectedIndex != -1)
+            if (listBoxModels.SelectedIndex != -1 && listBoxTests.SelectedIndex != -1)
             {
                 //Get the selected model and test
                 for (int i = 0; i < listResultsFiles.Count; i++)
@@ -231,68 +211,65 @@ namespace AutoEQ_Selector
                         //Get the graphic EQ values
                         string sGraphicEQ = File.ReadAllText(listResultsFiles[i]);
 
-                        //Get the selected configuration file
-                        for (int j = 0; j < listConfigFiles.Count; j++)
+                        //Check if the selected file exists
+                        if (File.Exists(sConfigFile))
                         {
-                            sParts = listConfigFiles[j].Split('\\');
-                            if (sParts[sParts.Length - 1].Replace(".txt", "") == listBoxConfig.SelectedItem.ToString())
+                            //Check if the target file has some graphic EQ values already
+                            StreamReader streamReader = new StreamReader(sConfigFile);
+
+                            //Reset and crate counters
+                            iCount = 0;
+                            bool bReplaced = false;
+                            while ((sLine = streamReader.ReadLine()) != null)
                             {
-                                //Check if the target file has some graphic EQ values already
-                                StreamReader streamReader = new StreamReader(listConfigFiles[j]);
-
-                                //Reset and crate counters
-                                iCount = 0;
-                                bool bReplaced = false;
-                                while ((sLine = streamReader.ReadLine()) != null)
+                                if (sLine.Contains("GraphicEQ: "))
                                 {
-                                    if (sLine.Contains("GraphicEQ: "))
-                                    {
-                                        //Close the stream reader
-                                        streamReader.Close();
+                                    //Close the stream reader
+                                    streamReader.Close();
 
-                                        //Store all the target file lines
-                                        string[] sLines = File.ReadAllLines(listConfigFiles[j]);
+                                    //Store all the target file lines
+                                    string[] sLines = File.ReadAllLines(sConfigFile);
 
-                                        //Write the graphic EQ line
-                                        StreamWriter streamWriter = new StreamWriter(listConfigFiles[j], false);
-                                        for (int k = 0; k < sLines.Length; ++k)
-                                        {
-                                            if (k == iCount)
-                                            {
-                                                streamWriter.WriteLine(sGraphicEQ);
-
-                                                Console.WriteLine("Applied: {0}", listResultsFiles[i]);
-                                            }
-                                            else
-                                            {
-                                                streamWriter.WriteLine(sLines[k]);
-                                            }
-                                        }
-
-                                        //Close the stream writer
-                                        streamWriter.Close();
-
-                                        bReplaced = true;
-                                        break;
-                                    }
-
-                                    iCount++;
-                                }
-
-                                //Append the graphic EQ line if not replaced
-                                if (!bReplaced)
-                                {
                                     //Write the graphic EQ line
-                                    StreamWriter streamWriter = new StreamWriter(listConfigFiles[j], true);
-                                    streamWriter.Write(sGraphicEQ);
-
-                                    Console.WriteLine("Applied: {0}", listResultsFiles[i]);
+                                    StreamWriter streamWriter = new StreamWriter(sConfigFile, false);
+                                    for (int k = 0; k < sLines.Length; ++k)
+                                    {
+                                        if (k == iCount)
+                                        {
+                                            streamWriter.WriteLine(sGraphicEQ);
+                                        }
+                                        else
+                                        {
+                                            streamWriter.WriteLine(sLines[k]);
+                                        }
+                                    }
 
                                     //Close the stream writer
                                     streamWriter.Close();
+
+                                    bReplaced = true;
                                     break;
                                 }
+
+                                iCount++;
                             }
+
+                            //Append the graphic EQ line if not replaced
+                            if (!bReplaced)
+                            {
+                                //Write the graphic EQ line
+                                StreamWriter streamWriter = new StreamWriter(sConfigFile, true);
+                                streamWriter.Write(sGraphicEQ);
+
+                                //Close the stream writer
+                                streamWriter.Close();
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Check if the AutoEQ configuration file exists", "AutoEQ Selector", MessageBoxButton.OK, MessageBoxImage.Error);
+                            Console.WriteLine("Config: {0}", sConfigFile);
                         }
                     }
                 }
@@ -317,12 +294,6 @@ namespace AutoEQ_Selector
             }
 
             listBoxTests.Items.Clear();
-
-            listBoxConfig.Items.Clear();
-            for (int i = 0; i < listConfig.Count; i++)
-            {
-                listBoxConfig.Items.Add(listConfig[i]);
-            }
         }
 
         /*
