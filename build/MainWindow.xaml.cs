@@ -85,7 +85,6 @@ namespace AutoEQ_Selector
             //Check the EqualizerAPO folder path
             if (string.IsNullOrEmpty(sPathEqualizerAPO) || !Directory.Exists(sPathEqualizerAPO))
             {
-
                 sPathEqualizerAPO = config.AppSettings.Settings["EqualizerAPO_Folder"].Value;
                 if (string.IsNullOrEmpty(sPathEqualizerAPO) || !Directory.Exists(sPathEqualizerAPO))
                 {
@@ -108,7 +107,7 @@ namespace AutoEQ_Selector
 
             //Get the headphone models
             iCount = 0;
-            listResultsFiles = new List<string>(Directory.GetFiles(sPathAutoEQ, "*GraphicEQ.txt", SearchOption.AllDirectories));
+            listResultsFiles = new List<string>(Directory.GetFiles(Path.Combine(sPathAutoEQ, "results"), "*GraphicEQ.txt", SearchOption.AllDirectories));
             while (iCount < listResultsFiles.Count)
             {
                 //Get the current headphone model
