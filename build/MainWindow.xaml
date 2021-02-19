@@ -6,6 +6,51 @@
         xmlns:local="clr-namespace:AutoEQ_Selector"
         mc:Ignorable="d"
         Title="AutoEQ Selector" Height="450" Width="800" Icon="Icon.ico" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Background="#FF323232" Foreground="#FFF0F0F0" Loaded="MainWindow_Loaded" WindowStyle="None">
+    <Window.Resources>
+        <!-- Button style for mouse hover effect -->
+        <Style x:Key="HoverButton" TargetType="Button">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Name="HoverGrid" RenderTransformOrigin="{TemplateBinding RenderTransformOrigin}" Background="{TemplateBinding Background}">
+                            <Grid.RenderTransform>
+                                <ScaleTransform />
+                            </Grid.RenderTransform>
+                            <Border BorderThickness="0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Button.Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="Black" ShadowDepth="15" BlurRadius="15" Opacity="0.4" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="HoverGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.05" />
+                                            <DoubleAnimation Storyboard.TargetName="HoverGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.05" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="HoverGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.05" />
+                                            <DoubleAnimation Storyboard.TargetName="HoverGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.05" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Rectangle x:Name="rectBorder" Fill="#00000000" HorizontalAlignment="Left" Height="450" Margin="0" VerticalAlignment="Top" Width="800" Stroke="#FF3F3F46" StrokeThickness="2"/>
         <Grid x:Name="gridTop" HorizontalAlignment="Left" Height="40" VerticalAlignment="Top" Width="800" Background="#FF3F3F46" MouseDown="GridTop_MouseDown">
@@ -16,9 +61,17 @@
             </Button>
         </Grid>
         <ListBox x:Name="listBoxModels" HorizontalAlignment="Left" Height="325" VerticalAlignment="Top" Width="420" Margin="15,60,0,0" Background="#FF3F3F46" Foreground="#FFF0F0F0" BorderBrush="#FFF0F0F0" FontSize="14" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ListBoxModels_SelectionChanged"/>
-        <ListBox x:Name="listBoxTests" HorizontalAlignment="Right" Height="150" VerticalAlignment="Top" Width="320" Margin="0,60,15,0" Background="#FF3F3F46" Foreground="#FFF0F0F0" BorderBrush="#FFF0F0F0" FontSize="14" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
-        <Button x:Name="buttonApply" Content="APPLY" HorizontalAlignment="Right" Margin="0,0,195,15" VerticalAlignment="Bottom" Width="120" Height="30" Background="#FF33B456" Foreground="#FFF0F0F0" BorderBrush="#FFF0F0F0" FontSize="16" Click="ButtonApply_Click" FontFamily="/AutoEQ_Selector;component/Resources/#Roboto Lt"/>
-        <Button x:Name="buttonReset" Content="RESET" HorizontalAlignment="Right" Margin="0,0,35,15" VerticalAlignment="Bottom" Width="120" Height="30" Background="#FFA1B202" Foreground="#FFF0F0F0" BorderBrush="#FFF0F0F0" FontFamily="/AutoEQ_Selector;component/Resources/#Roboto Lt" FontSize="16" Click="ButtonReset_Click"/>
-        <TextBox x:Name="textBoxModels" HorizontalAlignment="Left" Margin="15,0,0,20" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="420" FontSize="14" Foreground="#FFF0F0F0" SelectionBrush="#FF3F3F46" SelectionTextBrush="#FFF0F0F5" Background="#FF3F3F46" BorderBrush="#FFF0F0F0" UndoLimit="17" TextChanged="TextBoxModels_TextChanged"/>
+        <ListBox x:Name="listBoxTests" HorizontalAlignment="Right" Height="240" VerticalAlignment="Top" Width="320" Margin="0,60,15,0" Background="#FF3F3F46" Foreground="#FFF0F0F0" BorderBrush="#FFF0F0F0" FontSize="14" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+        <Button x:Name="buttonApply" Style="{StaticResource HoverButton}" Width="140" Foreground="White" Height="60" Click="ButtonApply_Click" RenderTransformOrigin="0.5,0.5" Background="#00000000" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,195,65" >
+            <Grid Background="#FF3F3F46" Width="140" Height="60">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="APPLY" FontSize="22" Margin="0" FontFamily="/AutoEQ_Selector;component/Resources/#Roboto" Foreground="Gainsboro" />
+            </Grid>
+        </Button>
+        <Button x:Name="buttonReset" Style="{StaticResource HoverButton}" Width="140" Foreground="White" Height="60" Click="ButtonReset_Click" RenderTransformOrigin="0.5,0.5" Background="#00000000" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,15,65" >
+            <Grid Background="#FF3F3F46" Width="140" Height="60">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Content="RESET" FontSize="22" Margin="0" FontFamily="/AutoEQ_Selector;component/Resources/#Roboto" Foreground="Gainsboro" />
+            </Grid>
+        </Button>
+        <TextBox x:Name="textBoxModels" HorizontalAlignment="Left" Margin="15,0,0,20" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="770" FontSize="14" Foreground="#FFF0F0F0" SelectionBrush="#FF3F3F46" SelectionTextBrush="#FFF0F0F5" Background="#FF3F3F46" BorderBrush="#FFF0F0F0" UndoLimit="17" TextChanged="TextBoxModels_TextChanged"/>
     </Grid>
 </Window>

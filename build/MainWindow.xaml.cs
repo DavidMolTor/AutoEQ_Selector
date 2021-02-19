@@ -216,7 +216,7 @@ namespace AutoEQ_Selector
                             //Check if the target file has some graphic EQ values already
                             StreamReader streamReader = new StreamReader(sConfigFile);
 
-                            //Reset and crate counters
+                            //Reset and create counters
                             iCount = 0;
                             bool bReplaced = false;
                             while ((sLine = streamReader.ReadLine()) != null)
@@ -256,6 +256,9 @@ namespace AutoEQ_Selector
                             //Append the graphic EQ line if not replaced
                             if (!bReplaced)
                             {
+                                //Close the stream reader
+                                streamReader.Close();
+
                                 //Write the graphic EQ line
                                 StreamWriter streamWriter = new StreamWriter(sConfigFile, true);
                                 streamWriter.Write(sGraphicEQ);
@@ -284,6 +287,41 @@ namespace AutoEQ_Selector
         */
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
         {
+            //Check if the selected file exists
+            if (File.Exists(sConfigFile))
+            {
+                //Check if the target file has some graphic EQ values already
+                StreamReader streamReader = new StreamReader(sConfigFile);
+
+                //Close the stream reader
+                streamReader.Close();
+
+                //Store all the target file lines
+                string[] sLines = File.ReadAllLines(sConfigFile);
+
+                //Write the graphic EQ line
+                StreamWriter streamWriter = new StreamWriter(sConfigFile, false);
+                for (int i = 0; i < sLines.Length; i++)
+                {
+                    if (sLines[i].Contains("GraphicEQ: "))
+                    {
+                        streamWriter.WriteLine(sLines[i].Replace("GraphicEQ: ", "# GraphicEQ: "));
+                    }
+                    else
+                    {
+                        streamWriter.WriteLine(sLines[i]);
+                    }
+                }
+
+                //Close the stream writer
+                streamWriter.Close();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Check if the AutoEQ configuration file exists", "AutoEQ Selector", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine("Config: {0}", sConfigFile);
+            }
+
             textBoxModels.Text = "";
 
             listBoxModels.Items.Clear();
