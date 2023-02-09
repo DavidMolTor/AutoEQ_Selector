@@ -2,7 +2,7 @@
 
 Simple tool for importing AutoEQ settings into EqualizerAPO.
 
-<p align="center"><img src="/build/Resources/Resources/AutoEQ Selector.png" alt="AutoEQ Selector"></p>
+<p align="left"><img src="build/Resources/AutoEQ Selector.png" alt="AutoEQ Selector"></p>
 
 ## Current status
 
